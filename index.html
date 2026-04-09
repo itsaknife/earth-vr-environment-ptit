@@ -44,6 +44,8 @@
 <script src="js/transform.js"></script>
 <!-- HUD -->
 <script src="js/hud.js"></script>
+<!-- VR Menu (Quest 3 support) -->
+<script src="js/vr_menu.js"></script>
 <!-- Timing -->
 <script src="js/time.js"></script>
 <!-- This files contains stuff for controling -->
@@ -75,20 +77,42 @@
 
     <!-- Floating Rotation Speed HUD -->
     <div id="speed-hud">
-        <div class="hud-title">&#9881; Rotation Speed</div>
+        <div class="hud-title">&#9881; Controls</div>
+        <div style="margin-bottom: 10px;">
+            <button onclick="if(typeof launchMeteor==='function') launchMeteor()" class="btn-small orange">Launch Meteor</button>
+            <button onclick="if(typeof toggleDoomsday==='function') toggleDoomsday()" class="btn-small red darken-4">Giant Meteor</button>
+            <button onclick="if(typeof resetEarth==='function') resetEarth()" class="btn-small blue">Reset Earth</button>
+        </div>
         <label>
-            <span>Earth</span>
+            <span>Time Speed</span>
+            <span class="val-label" id="hud-time-val">5000x</span>
+        </label>
+        <input id="hudTimeSlider" type="range" min="0" max="20000" step="500" value="5000"
+               oninput="syncTimeSpeed(this.value);">
+        <label>
+            <span>Earth Rotation</span>
             <span class="val-label" id="hud-earth-val">1.0x</span>
         </label>
         <input id="hudEarthSlider" type="range" min="0" max="5" step="0.1" value="1"
                oninput="syncEarthSpeed(this.value);">
         <label>
-            <span>Moon</span>
+            <span>Moon Rotation</span>
             <span class="val-label" id="hud-moon-val">1.0x</span>
         </label>
         <input id="hudMoonSlider" type="range" min="0" max="5" step="0.1" value="1"
                oninput="syncMoonSpeed(this.value);">
     </div>
+    <script>
+        function syncTimeSpeed(val) {
+            timeScale = parseFloat(val);
+            document.getElementById('hud-time-val').innerText = timeScale + 'x';
+            if (typeof menuState !== 'undefined') menuState.timeScale = timeScale;
+            updateVRMenuCanvas && updateVRMenuCanvas();
+        }
+        function updateTimeSlider() {
+            if (typeof menuState !== 'undefined' && updateVRMenuCanvas) updateVRMenuCanvas();
+        }
+    </script>
     <div id="settings" class="modal" style="overflow:hidden;height:70%;min-height:250px;">
         <div style="position:relative;overflow:hidden;display:flex;flex-direction:column;height:100%;">
             <div class="modal-content" style="flex:0 0 auto;">

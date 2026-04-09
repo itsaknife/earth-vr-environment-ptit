@@ -1,11 +1,19 @@
 var POIManager = function(scene, earthObject) {
     this.poiData = [
-        { name: "Hanoi", lat: 21.0285, lon: 105.8542, description: "Capital of Vietnam. Known for its centuries-old architecture and a rich culture." },
-        { name: "Ho Chi Minh City", lat: 10.7627, lon: 106.6602, description: "A vibrant metropolis in southern Vietnam. Formerly known as Saigon." },
-        { name: "Paris", lat: 48.8566, lon: 2.3522, description: "The City of Light. World center for art, fashion, gastronomy and culture." },
-        { name: "New York", lat: 40.7128, lon: -74.0060, description: "The Big Apple. A global hub for finance, culture, and entertainment." },
-        { name: "Tokyo", lat: 35.6895, lon: 139.6917, description: "Japan's bustling capital. Mixes ultramodern and traditional temples." },
-        { name: "London", lat: 51.5074, lon: -0.1278, description: "Capital of the UK. A 21st-century city with history stretching back to Roman times." }
+        { name: "Hà Nội", lat: 21.0285, lon: 105.8542, description: "Thủ đô của Việt Nam. Nổi tiếng với kiến trúc cổ kính và nền văn hóa phong phú." },
+        { name: "TP. Hồ Chí Minh", lat: 10.7627, lon: 106.6602, description: "Đô thị sầm uất ở miền Nam Việt Nam. Trước đây được gọi là Sài Gòn." },
+        { name: "Paris", lat: 48.8566, lon: 2.3522, description: "Kinh đô Ánh sáng. Trung tâm thế giới về nghệ thuật, thời trang và văn hóa." },
+        { name: "New York", lat: 40.7128, lon: -74.0060, description: "Quả táo lớn. Trung tâm toàn cầu về tài chính, văn hóa và giải trí." },
+        { name: "Tokyo", lat: 35.6895, lon: 139.6917, description: "Thủ đô nhộn nhịp của Nhật Bản. Sự kết hợp giữa hiện đại và truyền thống." },
+        { name: "London", lat: 51.5074, lon: -0.1278, description: "Thủ đô của Vương quốc Anh. Thành phố với lịch sử lâu đời từ thời La Mã." },
+        { name: "Sydney", lat: -33.8688, lon: 151.2093, description: "Nổi tiếng với Nhà hát Opera và Cầu Cảng tại Úc." },
+        { name: "Rio de Janeiro", lat: -22.9068, lon: -43.1729, description: "Nơi có tượng Chúa Cứu Thế và bãi biển Copacabana nổi tiếng." },
+        { name: "Cairo", lat: 30.0444, lon: 31.2357, description: "Cửa ngõ dẫn vào Đại kim tự tháp Giza và tượng Nhân sư ở Ai Cập." },
+        { name: "Moscow", lat: 55.7558, lon: 37.6173, description: "Được biết đến với Quảng trường Đỏ, Điện Kremlin và Nhà thờ Saint Basil." },
+        { name: "Bắc Kinh", lat: 39.9042, lon: 116.4074, description: "Thủ đô của Trung Quốc, quê hương của Tử Cấm Thành và Vạn Lý Trường Thành." },
+        { name: "Rome", lat: 41.9028, lon: 12.4964, description: "Thành phố vĩnh cửu, nơi có Đấu trường La Mã và Thành quốc Vatican." },
+        { name: "Dubai", lat: 25.2048, lon: 55.2708, description: "Nổi tiếng với Burj Khalifa, tòa nhà cao nhất thế giới." },
+        { name: "San Francisco", lat: 37.7749, lon: -122.4194, description: "Nổi tiếng với Cầu Cổng Vàng và những chiếc xe cáp biểu tượng." }
     ];
 
     this.markers = [];

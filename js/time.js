@@ -2,9 +2,12 @@ var currentTime = new Date();
 var timeScale = 5000;
 
 // The function is called in the animate function
+var isTimePaused = false;
 function updateTime(delta) {
-    currentTime.setTime(
-        currentTime.getTime() + timeScale * delta);
+    if (!isTimePaused) {
+        currentTime.setTime(
+            currentTime.getTime() + timeScale * delta);
+    }
 }
 
 // This function returns a float between 0 and 1

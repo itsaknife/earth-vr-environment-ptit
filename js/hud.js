@@ -26,10 +26,10 @@ var EarthHUD = function() {
         this.context.font = '100px sans-serif';
         this.context.textAlign = 'left';
         this.context.textBaseline = 'hanging';
-        // this.context.fillText('Earth', 0, 0);
+        // this.context.fillText('Trái đất', 0, 0);
         // this.context.font = '40px sans-serif';
-        // this.context.fillText(currentTime.toLocaleString('en-US'), 0, 900/8);
-        // this.context.fillText('Time scale: ' + timeScale + 'x', 0, 1300/8);
+        // this.context.fillText(currentTime.toLocaleString('vi-VN'), 0, 900/8);
+        // this.context.fillText('Tốc độ thời gian: ' + timeScale + 'x', 0, 1300/8);
         this.texture.needsUpdate = true;
         // Rotation
         var angle = Math.atan2(camera.position.x, camera.position.z);
@@ -68,10 +68,10 @@ var MoonHUD = function() {
         context.font = '100px sans-serif';
         context.textAlign = 'left';
         context.textBaseline = 'hanging';
-        // context.fillText('Moon', width/2 + 125/2, 0);
+        // context.fillText('Mặt trăng', width/2 + 125/2, 0);
         // context.font = '40px sans-serif';
         // var moonAge = (nowInLunarMonth() * 29.530588853).toFixed(1);
-        // context.fillText('Moon age: ' + moonAge + ' days', width/2 + 125/2, 900/8);
+        // context.fillText('Tuổi trăng: ' + moonAge + ' ngày', width/2 + 125/2, 900/8);
         // context.fillText(this.getPhase(), width/2 + 125/2, 1300/8);
         texture.needsUpdate = true;
         // Location
@@ -89,14 +89,14 @@ var MoonHUD = function() {
     this.getPhase = function() {
         var c = nowInLunarMonth();
         var padding = 0.02;
-        if(c  < 0.00 + padding || c  > 1.00 - padding) return 'New moon';
-        if(c >= 0.00 + padding && c <= 0.25 - padding) return 'Waxing crescent';
-        if(c  > 0.25 - padding && c  < 0.25 + padding) return 'First quater';
-        if(c >= 0.25 + padding && c <= 0.50 - padding) return 'Waxing gibbous';
-        if(c  > 0.50 - padding && c  < 0.50 + padding) return 'Full moon';
-        if(c >= 0.50 + padding && c <= 0.75 - padding) return 'Waning gibbous';
-        if(c  > 0.75 - padding && c  < 0.75 + padding) return 'Third quater';
-        else return 'Waning crescent';
+        if(c  < 0.00 + padding || c  > 1.00 - padding) return 'Trăng mới';
+        if(c >= 0.00 + padding && c <= 0.25 - padding) return 'Trăng lưỡi liềm đầu tháng';
+        if(c  > 0.25 - padding && c  < 0.25 + padding) return 'Trăng bán nguyệt đầu tháng';
+        if(c >= 0.25 + padding && c <= 0.50 - padding) return 'Trăng khuyết đầu tháng';
+        if(c  > 0.50 - padding && c  < 0.50 + padding) return 'Trăng tròn';
+        if(c >= 0.50 + padding && c <= 0.75 - padding) return 'Trăng khuyết cuối tháng';
+        if(c  > 0.75 - padding && c  < 0.75 + padding) return 'Trăng bán nguyệt cuối tháng';
+        else return 'Trăng lưỡi liềm cuối tháng';
     }
     this.show = function () { this.visibility = true; }
     this.hide = function () { this.visibility = false; }

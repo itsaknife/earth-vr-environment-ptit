@@ -65,12 +65,18 @@ var cameraTransform = new (function () {
   };
 })();
 
-function updateEarthRotation() {
+function updateEarthRotation(delta) {
   earthObject.quaternion.set(0, 0, 0, 1);
   earthObject.rotateX((-23.5 / 180) * Math.PI);
   var a = nowInYear(),
     b = nowInDay();
   earthObject.rotateY((a + b - 0.72) * 2 * Math.PI * earthRotationSpeed);
+
+  // Dynamic Clouds rotation relative to Earth
+  var cloudLayer = earthObject.getObjectByName("CloudLayer");
+  if (cloudLayer) {
+    cloudLayer.rotation.y += 0.0005; // Slightly faster than Earth
+  }
 }
 
 function updateSunLocation() {

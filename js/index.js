@@ -67,6 +67,11 @@ $(document).ready(function () {
     // POI Manager
     poiManager = new POIManager(scene, earthObject);
     poiManager.init();
+
+    // Init VR Settings Menu
+    if (typeof initVRMenu === "function") {
+        initVRMenu();
+    }
 });
 
 // Window resize call back
