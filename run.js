@@ -3,6 +3,6 @@ var serveStatic = require("serve-static");
 connect()
   .use(serveStatic(__dirname))
   .listen(8081, function () {
-    console.log("Server running on 8081...");
     console.log("them de deploy r xoa");
+    console.log("Server running on 8081...");
   });
