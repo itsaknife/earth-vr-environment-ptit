@@ -50,6 +50,7 @@ var sunLight;
 var earthHUD;
 var moonHUD;
 var poiManager;
+var vrHelp;
 
 $(document).ready(function () {
   document.body.appendChild(renderer.domElement);
@@ -70,6 +71,13 @@ $(document).ready(function () {
   earthHUD = new EarthHUD();
   scene.add(earthHUD.plane);
   // moonHUD = new MoonHUD();
+
+  // VR Tutorial Help Panel
+  if (typeof VRHelpPanel === "function") {
+    vrHelp = new VRHelpPanel();
+    scene.add(vrHelp.plane);
+  }
+
   // POI Manager
   poiManager = new POIManager(scene, earthObject);
   poiManager.init();
