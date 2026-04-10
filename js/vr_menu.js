@@ -1,18 +1,21 @@
-var vrMenuGroup = null;
+import * as THREE from 'three';
+import { formatVietnamTime, setTimeScale, timeScale } from './time.js';
+import { resetEarth, launchMeteor, toggleDoomsday } from './render.js';
+
+export var vrMenuGroup = null;
 var vrMenuCanvas = null;
 var vrMenuContext = null;
 var vrMenuTexture = null;
 
-var menuState = {
+export var menuState = {
   timeScale: 5000,
   isMenuVisible: false,
   lastButtonPress: 0,
 };
 
-function initVRMenu() {
+export function initVRMenu(scene, camera) {
   vrMenuGroup = new THREE.Group();
 
-  // Create 3D Plane for Menu
   vrMenuCanvas = document.createElement("canvas");
   vrMenuCanvas.width = 512;
   vrMenuCanvas.height = 256;
@@ -23,134 +26,131 @@ function initVRMenu() {
     map: vrMenuTexture,
     transparent: true,
   });
-  var menuGeometry = new THREE.PlaneGeometry(10, 5); // Size in 3D space
+  var menuGeometry = new THREE.PlaneGeometry(10, 5); 
   var menuMesh = new THREE.Mesh(menuGeometry, menuMaterial);
 
-  // Position menu in front of user
+  // Position menu in front
   menuMesh.position.set(0, 0, -15);
   vrMenuGroup.add(menuMesh);
 
-  // Attach menu to pose camera (headset) so it moves with user
-  poseCamera.add(vrMenuGroup);
+  // Instead of poseCamera, we will just add it to the scene 
+  // and update its position/rotation to stay in front of the camera when opened
+  scene.add(vrMenuGroup);
 
-  // Initially hidden
   vrMenuGroup.visible = false;
   menuState.isMenuVisible = false;
 
   updateVRMenuCanvas();
 }
 
-function updateVRMenuCanvas() {
+export function updateVRMenuCanvas() {
+  if (!vrMenuContext) return;
   vrMenuContext.clearRect(0, 0, 512, 256);
-  vrMenuContext.fillStyle = "rgba(0, 0, 0, 0.7)";
+  vrMenuContext.fillStyle = "rgba(0, 0, 0, 0.75)";
   vrMenuContext.fillRect(0, 0, 512, 256);
 
-  vrMenuContext.fillStyle = "#ffffff";
-  vrMenuContext.font = "30px Arial";
+  vrMenuContext.fillStyle = "#00ffff";
+  vrMenuContext.font = "bold 34px Arial";
   vrMenuContext.textAlign = "center";
-  vrMenuContext.fillText("VR Settings Menu", 256, 50);
+  vrMenuContext.fillText("VR SETTINGS MENU", 256, 50);
 
-  vrMenuContext.font = "24px Arial";
+  vrMenuContext.fillStyle = "#ffffff";
+  vrMenuContext.font = "20px Arial";
   vrMenuContext.textAlign = "left";
-  vrMenuContext.fillText("A/X: Reset | B/Y + ThumbClick: Giant Meteor", 30, 90);
+  vrMenuContext.fillText("A/X: Reset Earth", 30, 95);
+  vrMenuContext.fillText("B/Y: Close Menu", 30, 125);
+  vrMenuContext.fillText("Grip: Launch Meteor", 30, 155);
+  vrMenuContext.fillText("Stick Click: Doomsday", 30, 185);
 
+  vrMenuContext.fillStyle = "#ffaa00";
   vrMenuContext.fillText(
-    "Time Speed: " + timeScale + "x (Use Thumbstick)",
+    "Time: " + Math.round(timeScale) + "x (Stick L/R)",
     30,
-    130,
+    225,
   );
 
   vrMenuContext.fillStyle = "#00ff00";
-  vrMenuContext.fillText("Vietnam Time (UTC+7):", 30, 180);
-  vrMenuContext.font = "32px Courier New";
-  vrMenuContext.fillText(formatVietnamTime(), 30, 220);
+  vrMenuContext.font = "bold 24px Courier New";
+  vrMenuContext.textAlign = "right";
+  vrMenuContext.fillText(formatVietnamTime().split(' ')[0], 480, 225);
 
   vrMenuTexture.needsUpdate = true;
 }
 
-function updateVRControllers() {
-  var gamepads = navigator.getGamepads && navigator.getGamepads();
-  if (!gamepads) return;
+export function updateVRControllers(renderer, scene, camera) {
+  const session = renderer.xr.getSession();
+  if (!session) return;
 
-  var now = performance.now();
-  var debounceTime = 300; // 300ms debounce for buttons
+  const inputSources = session.inputSources;
+  const now = performance.now();
+  const debounceTime = 300; 
 
-  for (var i = 0; i < gamepads.length; i++) {
-    var gp = gamepads[i];
-    if (!gp) continue;
+  inputSources.forEach((source) => {
+    const gamepad = source.gamepad;
+    if (!gamepad) return;
 
-    // Toggle Menu visibility (Trigger or Button B/Y depending on gamepad API index, usually button 1 or 5)
-    if (gp.buttons[5] && gp.buttons[5].pressed) {
+    // Button 5 (B/Y or Secondary Trigger depending on platform)
+    // In WebXR, typically: 0: trigger, 1: grip, 4: A/X, 5: B/Y
+    if (gamepad.buttons[5] && gamepad.buttons[5].pressed) {
       if (now - menuState.lastButtonPress > debounceTime) {
         menuState.isMenuVisible = !menuState.isMenuVisible;
         vrMenuGroup.visible = menuState.isMenuVisible;
+        
+        if (menuState.isMenuVisible) {
+            // Reposition menu in front of camera
+            const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            const pos = camera.position.clone().add(direction.multiplyScalar(15));
+            vrMenuGroup.position.copy(pos);
+            vrMenuGroup.lookAt(camera.position);
+        }
+        
         menuState.lastButtonPress = now;
       }
     }
 
-    // Only process changes if menu is visible
     if (menuState.isMenuVisible) {
-      // Reset Earth (Button A/X, usually button 0 or 4)
-      if (
-        (gp.buttons[0] && gp.buttons[0].pressed) ||
-        (gp.buttons[4] && gp.buttons[4].pressed)
-      ) {
+      // Reset (Button 4: A/X)
+      if (gamepad.buttons[4] && gamepad.buttons[4].pressed) {
         if (now - menuState.lastButtonPress > debounceTime) {
-          if (typeof resetEarth === "function") resetEarth();
+          resetEarth();
           updateVRMenuCanvas();
           menuState.lastButtonPress = now;
         }
       }
 
-      // Toggle Doomsday: Thumbstick Click (Usually Button 3 or 2 depending on standard mapping)
-      if (
-        (gp.buttons[2] && gp.buttons[2].pressed) ||
-        (gp.buttons[3] && gp.buttons[3].pressed)
-      ) {
+      // Doomsday (Button 3: Stick Click)
+      if (gamepad.buttons[3] && gamepad.buttons[3].pressed) {
         if (now - menuState.lastButtonPress > 1000) {
-          // 1 second cooldown
-          if (typeof toggleDoomsday === "function") toggleDoomsday();
+          toggleDoomsday(scene);
           updateVRMenuCanvas();
           menuState.lastButtonPress = now;
         }
       }
-      // Change Speed (Thumbstick X/Y, usually axes[2]/[3] or axes[0]/[1])
-      var xAxe = gp.axes && gp.axes.length >= 3 ? gp.axes[2] : gp.axes[0] || 0;
-      if (xAxe > 0.5) {
-        // Right
+
+      // Time Scaling (Stick X: axis 2)
+      const xAxe = gamepad.axes[2];
+      if (Math.abs(xAxe) > 0.5) {
         if (now - menuState.lastButtonPress > 100) {
-          // Faster repeat for stick
-          timeScale += 500;
-          if (timeScale > 20000) timeScale = 20000;
+          let newScale = timeScale + (xAxe > 0 ? 500 : -500);
+          newScale = Math.max(0, Math.min(20000, newScale));
+          setTimeScale(newScale);
+          
           if (document.getElementById("hudTimeSlider")) {
-            document.getElementById("hudTimeSlider").value = timeScale;
-            document.getElementById("hud-time-val").innerText = timeScale + "x";
-          }
-          updateVRMenuCanvas();
-          menuState.lastButtonPress = now;
-        }
-      } else if (xAxe < -0.5) {
-        // Left
-        if (now - menuState.lastButtonPress > 100) {
-          timeScale -= 500;
-          if (timeScale < 0) timeScale = 0;
-          if (document.getElementById("hudTimeSlider")) {
-            document.getElementById("hudTimeSlider").value = timeScale;
-            document.getElementById("hud-time-val").innerText = timeScale + "x";
+            document.getElementById("hudTimeSlider").value = newScale;
+            document.getElementById("hud-time-val").innerText = newScale + "x";
           }
           updateVRMenuCanvas();
           menuState.lastButtonPress = now;
         }
       }
 
-      // Launch Meteor Strike: Grip Button (Usually Button 1 or 2)
-      if (gp.buttons[1] && gp.buttons[1].pressed) {
+      // Meteor (Button 1: Grip)
+      if (gamepad.buttons[1] && gamepad.buttons[1].pressed) {
         if (now - menuState.lastButtonPress > 1000) {
-          // 1 second cooldown
-          if (typeof launchMeteor === "function") launchMeteor();
+          launchMeteor(scene);
           menuState.lastButtonPress = now;
         }
       }
     }
-  }
+  });
 }

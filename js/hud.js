@@ -1,10 +1,15 @@
-var EarthHUD = function () {
+import * as THREE from 'three';
+import { formatVietnamTime, nowInLunarMonth, nowInYear } from './time.js';
+
+// ── Earth HUD ────────────────────────────────────────────────────────────────
+export var EarthHUD = function (camera) {
   var width = 1024,
     height = 256;
   this.maxTransparency = 0.9;
   this.minTransparency = 0;
   this.transparency = this.maxTransparency;
   this.visibility = true;
+  this._camera = camera;
   var canvas = (this.canvas = document.createElement("canvas"));
   var context = (this.context = this.canvas.getContext("2d"));
   var texture = (this.texture = new THREE.Texture(canvas));
@@ -17,7 +22,7 @@ var EarthHUD = function () {
   var geometry = (this.geometry = new THREE.PlaneGeometry(20, 5));
   var plane = (this.plane = new THREE.Mesh(geometry, material));
   plane.position.set(0, 8, 0);
-  // scene.add(plane);
+
   this.update = function () {
     if (this.visibility && this.transparency < this.maxTransparency) {
       this.transparency += 0.02;
@@ -29,18 +34,13 @@ var EarthHUD = function () {
     this.context.font = "100px sans-serif";
     this.context.textAlign = "left";
     this.context.textBaseline = "hanging";
-    // this.context.fillText('Trái đất', 0, 0);
     this.context.font = "30px sans-serif";
     this.context.fillText("Vietnam (UTC+7):", 0, 0);
     this.context.font = "40px Courier New";
     this.context.fillText(formatVietnamTime(), 0, 80);
 
-    // this.context.font = '40px sans-serif';
-    // this.context.fillText(currentTime.toLocaleString('vi-VN'), 0, 900/8);
-    // this.context.fillText('Tốc độ thời gian: ' + timeScale + 'x', 0, 1300/8);
     this.texture.needsUpdate = true;
-    // Rotation
-    var angle = Math.atan2(camera.position.x, camera.position.z);
+    var angle = Math.atan2(this._camera.position.x, this._camera.position.z);
     this.plane.quaternion.set(0, 0, 0, 1);
     this.plane.rotateY(angle);
   };
@@ -52,13 +52,15 @@ var EarthHUD = function () {
   };
 };
 
-var MoonHUD = function () {
+// ── Moon HUD ─────────────────────────────────────────────────────────────────
+export var MoonHUD = function (camera) {
   var width = 1024,
     height = 256;
   this.maxTransparency = 0.9;
   this.minTransparency = 0;
   this.transparency = this.maxTransparency;
   this.visibility = true;
+  this._camera = camera;
   var canvas = (this.canvas = document.createElement("canvas"));
   var context = (this.context = this.canvas.getContext("2d"));
   var texture = (this.texture = new THREE.Texture(canvas));
@@ -71,7 +73,7 @@ var MoonHUD = function () {
   var geometry = (this.geometry = new THREE.PlaneGeometry(200, 50));
   var plane = (this.plane = new THREE.Mesh(geometry, material));
   plane.position.set(0, 8, 0);
-  // scene.add(plane);
+
   this.update = function () {
     if (this.visibility && this.transparency < this.maxTransparency) {
       this.transparency += 0.02;
@@ -83,21 +85,14 @@ var MoonHUD = function () {
     context.font = "100px sans-serif";
     context.textAlign = "left";
     context.textBaseline = "hanging";
-    // context.fillText('Mặt trăng', width/2 + 125/2, 0);
-    // context.font = '40px sans-serif';
-    // var moonAge = (nowInLunarMonth() * 29.530588853).toFixed(1);
-    // context.fillText('Tuổi trăng: ' + moonAge + ' ngày', width/2 + 125/2, 900/8);
-    // context.fillText(this.getPhase(), width/2 + 125/2, 1300/8);
     texture.needsUpdate = true;
-    // Location
     var c = nowInYear() + nowInLunarMonth();
     plane.position.set(
       385 * Math.cos((c - 0.22) * 2 * Math.PI),
       0,
       385 * Math.sin((0.22 - c) * 2 * Math.PI),
     );
-    // Rotation
-    var angle = Math.atan2(camera.position.x, camera.position.z);
+    var angle = Math.atan2(this._camera.position.x, this._camera.position.z);
     plane.quaternion.set(0, 0, 0, 1);
     plane.rotateY(angle);
   };

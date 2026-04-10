@@ -1,45 +1,48 @@
-window.addEventListener("gamepadconnected", function(e) {
-    updateLoop();
-    M.toast({html: 'Gamepad connected.'});
-});
+import { cameraTransform } from './transform.js';
+import { fasterTime, slowerTime } from './time.js';
 
 var fasterActioned = false;
 var slowerActioned = false;
 var toggleHUDActioned = false;
-function updateLoop() {
+
+export function updateGamepad(earthHUD, moonHUD) {
     var gamepads = navigator.getGamepads();
-    var gp = gamepads ? gamepads[0] : null;
-    if (!gp) {
-        requestAnimationFrame(updateLoop);
-        return;
-    }
-    if(gp.axes[0] > 0) {
+    // We only care about the first one for standard desktop controls
+    var gp = gamepads ? (gamepads[0] || gamepads[1] || gamepads[2]) : null;
+    if (!gp) return;
+
+    // Axis 0 & 1: Rotation
+    if(gp.axes[0] > 0.2) {
         cameraTransform.increaseTheta();
-    }
-    if(gp.axes[0] < 0) {
+    } else if(gp.axes[0] < -0.2) {
         cameraTransform.decreaseTheta();
     }
+
+    // Button 5 (R1/RB) combo with Axis 1 for Zoom
     if(gp.buttons[5] && gp.buttons[5].pressed) {
-        if(gp.axes[1] > 0) {
+        if(gp.axes[1] > 0.2) {
             cameraTransform.goFarther();
-        }
-        if(gp.axes[1] < 0) {
+        } else if(gp.axes[1] < -0.2) {
             cameraTransform.goNearer();
         }
     } else {
-        if(gp.axes[1] > 0) {
+        // Axis 1: Phi rotation
+        if(gp.axes[1] > 0.2) {
             cameraTransform.decreasePhi();
-        }
-        if(gp.axes[1] < 0) {
+        } else if(gp.axes[1] < -0.2) {
             cameraTransform.increasePhi();
         }
     }
+
+    // Direct buttons for zoom (A/B or similar)
     if(gp.buttons[0] && gp.buttons[0].pressed) {
         cameraTransform.goNearer();
     }
     if(gp.buttons[1] && gp.buttons[1].pressed) {
         cameraTransform.goFarther();
     }
+
+    // Time scaling (B3 / B2)
     if(gp.buttons[3] && gp.buttons[3].pressed) {
         if(!fasterActioned) fasterTime();
         fasterActioned = true;
@@ -52,6 +55,8 @@ function updateLoop() {
     } else {
         slowerActioned = false;
     }
+
+    // Toggle HUD (B4)
     if(gp.buttons[4] && gp.buttons[4].pressed) {
         if(!toggleHUDActioned) {
             if(earthHUD) {
@@ -65,6 +70,4 @@ function updateLoop() {
     } else {
         toggleHUDActioned = false;
     }
-
-    requestAnimationFrame(updateLoop);
 }

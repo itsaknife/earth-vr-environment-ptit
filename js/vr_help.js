@@ -1,4 +1,6 @@
-var VRHelpPanel = function () {
+import * as THREE from 'three';
+
+export var VRHelpPanel = function (scene, camera) {
   var width = 512,
     height = 384;
   var canvas = (this.canvas = document.createElement("canvas"));
@@ -16,53 +18,53 @@ var VRHelpPanel = function () {
   this.plane = new THREE.Mesh(geometry, material);
   this.plane.renderOrder = 0;
 
-  // Position it further out and slightly higher to avoid clipping with Earth
+  // Position it further out and slightly higher
   this.plane.position.set(-10, 5, -18);
+  scene.add(this.plane);
 
   this.draw = function () {
     context.clearRect(0, 0, width, height);
 
     // Background
-    context.fillStyle = "rgba(0, 0, 0, 0.6)";
+    context.fillStyle = "rgba(0, 0, 0, 0.65)";
     context.fillRect(0, 0, width, height);
     context.strokeStyle = "#00ffff";
-    context.lineWidth = 5;
+    context.lineWidth = 4;
     context.strokeRect(0, 0, width, height);
 
     // Title
     context.fillStyle = "#00ffff";
-    context.font = "bold 36px Arial";
+    context.font = "bold 38px Arial";
     context.textAlign = "center";
-    context.fillText("VR TUTORIAL", width / 2, 50);
+    context.fillText("VR TUTORIAL", width / 2, 55);
 
     // Content
     context.fillStyle = "#ffffff";
     context.font = "24px Arial";
     context.textAlign = "left";
 
-    var startY = 110;
+    var startY = 120;
     var step = 45;
 
-    context.fillText("● B / Y: Mở/Tắt Menu", 40, startY);
-    context.fillText("● Grip (Nút cạnh): Phóng Meteor", 40, startY + step);
-    context.fillText("● Cần xoay (Stick): Chỉnh tốc độ", 40, startY + step * 2);
-    context.fillText("● Stick press: Tận thế", 40, startY + step * 3);
-    context.fillText("● A / X: Reset", 40, startY + step * 4);
+    context.fillText("● B / Y: Mở/Tắt Menu", 45, startY);
+    context.fillText("● Grip (Cạnh): Phóng Meteor", 45, startY + step);
+    context.fillText("● Stick L/R: Chỉnh tốc độ", 45, startY + step * 2);
+    context.fillText("● Stick Click: Tận thế", 45, startY + step * 3);
+    context.fillText("● A / X: Reset Earth", 45, startY + step * 4);
 
     context.fillStyle = "#ffff00";
-    context.font = "italic 18px Arial";
+    context.font = "italic 19px Arial";
     context.fillText(
-      "(Hướng dẫn sẽ tự ẩn sau khi mở Menu)",
-      40,
-      startY + step * 5 + 10,
+      "(Menu sẽ tự định vị theo hướng nhìn)",
+      45,
+      startY + step * 5 + 15,
     );
 
     texture.needsUpdate = true;
   };
 
   this.update = function () {
-    // Always face user
-    if (typeof camera !== "undefined") {
+    if (this.plane && this.plane.visible) {
       this.plane.lookAt(camera.position);
     }
   };

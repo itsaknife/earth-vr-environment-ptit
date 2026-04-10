@@ -1,7 +1,7 @@
 // ============================================================
 // General vertex shader — used by night layer
 // ============================================================
-var generalVS = `
+export const generalVS = `
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 sunDirection;
@@ -18,11 +18,8 @@ void main() {
 
 // ============================================================
 // Night layer fragment shader
-// City lights fade in on the dark side of the terminator.
-// NO artificial orange glow — the atmosphere shader handles
-// the terminator fringe separately on a larger sphere.
 // ============================================================
-var nightFS = `
+export const nightFS = `
 uniform sampler2D nightTexture;
 
 varying vec2 vUv;
@@ -33,26 +30,17 @@ void main( void ) {
     vec4 nightColor = texture2D( nightTexture, vUv );
     vec3 nightRGB   = nightColor.rgb;
 
-    // cosAngle: +1 = fully lit by sun (day), -1 = away from sun (night)
-    // sunDirection points FROM fragment TOWARD sun in view space;
-    // negate it so we compare against the outward surface normal.
     float cosAngle = dot( normalize(vNormal), normalize(-sunDirection) );
-
-    // nightBlend = 1 on the dark side, 0 on the lit side.
-    // Wider smoothstep (−0.25 … 0.25) gives a soft dusk/dawn transition
-    // that corresponds to roughly a 30° twilight belt — realistic.
     float nightBlend = 1.0 - smoothstep(-0.25, 0.25, cosAngle);
 
-    // Output city lights only where it is dark; keep alpha tight so
-    // there is no bright halo bleeding into the day side.
     gl_FragColor = vec4( nightRGB, nightBlend );
 }
 `;
 
 // ============================================================
-// Cloud vertex shader — passes sun direction for lighting
+// Cloud vertex shader
 // ============================================================
-var cloudVS = `
+export const cloudVS = `
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vSunDir;
@@ -68,9 +56,9 @@ void main() {
 `;
 
 // ============================================================
-// Cloud fragment shader — thin, lit, soft edges
+// Cloud fragment shader
 // ============================================================
-var cloudFS = `
+export const cloudFS = `
 uniform sampler2D cloudTexture;
 uniform sampler2D nightTexture;
 uniform vec3      sunPosition;
@@ -81,27 +69,19 @@ varying vec3 vSunDir;
 
 void main() {
     vec4  cloudSample = texture2D( cloudTexture, vUv );
-    // pow > 1 thins out semi-transparent edges; * 0.7 reduces overall density
     float opacity     = pow(cloudSample.r, 1.5) * 0.70;
-
-    // Lambertian diffuse
     float NdotL       = max( dot( normalize(vNormal), normalize(vSunDir) ), 0.0 );
-
-    // Sunlit = bright white/ivory; shadow side = dark blue-grey
     vec3  litColor    = mix( vec3(0.10, 0.13, 0.20), vec3(1.0, 0.98, 0.95), NdotL );
-
-    // Soft roll-off from the terminator so clouds don't glow harshly at night
     float darkening   = smoothstep(-0.25, 0.35, NdotL);
     vec3  finalColor  = litColor * darkening;
-
     gl_FragColor = vec4( finalColor, opacity * 0.92 );
 }
 `;
 
 // ============================================================
-// Atmosphere vertex shader — Rayleigh-like limb glow
+// Atmosphere vertex shader
 // ============================================================
-var atmosphereVS = `
+export const atmosphereVS = `
 mat4 inverse(mat4 m) {
     float
         a00 = m[0][0], a01 = m[0][1], a02 = m[0][2], a03 = m[0][3],
@@ -174,7 +154,7 @@ void main(void) {
 `;
 
 // ============================================================
-var atmosphereFS = `
+export const atmosphereFS = `
 varying float intensity1;
 varying float intensity2;
 
@@ -192,9 +172,9 @@ void main(void) {
 `;
 
 // ============================================================
-// Limb halo shaders (unchanged)
+// Limb halo shaders
 // ============================================================
-var haloVS = `
+export const haloVS = `
 varying float intensity;
 const float PI = 3.14159265358979;
 
@@ -215,7 +195,7 @@ void main(void) {
 }
 `;
 
-var haloFS = `
+export const haloFS = `
 varying float intensity;
 uniform vec3 color;
 
@@ -227,7 +207,7 @@ void main(void) {
 // ============================================================
 // Aurora vertex / fragment shaders
 // ============================================================
-var auroraVS = `
+export const auroraVS = `
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vWorldPos;
@@ -241,7 +221,7 @@ void main() {
 }
 `;
 
-var auroraFS = `
+export const auroraFS = `
 uniform float time;
 uniform vec3  sunPosition;
 
