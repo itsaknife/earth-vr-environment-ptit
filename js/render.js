@@ -456,8 +456,4 @@ export function animateFrame(delta, scene, camera, renderer, hudObjects, poiMana
   
   if (vrMenuUpdate) vrMenuUpdate();
   if (vrControllersUpdate) vrControllersUpdate();
-
-  if (!renderer.xr.isPresenting) {
-    cameraTransform.update();
-  }
 }

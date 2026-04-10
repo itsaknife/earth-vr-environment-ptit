@@ -16,7 +16,7 @@ import { setTimeScale } from './time.js';
 import { updateGamepad } from './control.js';
 
 // ── Application State ────────────────────────────────────────────────────────
-let renderer, scene, camera, controls;
+let renderer, scene, camera, cameraGroup, controls;
 let earthHUD, moonHUD, poiManager, vrHelp;
 
 async function init() {
@@ -28,12 +28,19 @@ async function init() {
     });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.xr.enabled = true; // IMPORTANT for Quest 3
+    renderer.xr.enabled = true; 
     document.body.appendChild(renderer.domElement);
 
     // ── Scene & Camera ──
     scene = new THREE.Scene();
+    
+    // Create cameraGroup (dolly) to move user in VR
+    cameraGroup = new THREE.Group();
+    scene.add(cameraGroup);
+
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 20000);
+    cameraGroup.add(camera); // Camera is relative to group
+    
     cameraTransform.init(camera);
 
     // ── Controls ──
@@ -62,7 +69,7 @@ async function init() {
     vrHelp = new VRHelpPanel(scene, camera);
     initVRMenu(scene, camera);
 
-    // ── Global Exposures for HTML events ──
+    // ── Global Exposures ──
     window.launchMeteor = () => launchMeteor(scene);
     window.toggleDoomsday = () => toggleDoomsday(scene);
     window.resetEarth = resetEarth;
@@ -71,11 +78,23 @@ async function init() {
     window.syncMoonSpeed = (val) => setMoonRotationSpeed(parseFloat(val));
     window.earthHUD = earthHUD;
     window.moonHUD = moonHUD;
+    window.renderer = renderer;
 
     // ── Event Listeners ──
     window.addEventListener('resize', onWindowResize);
     
-    // Start Animation Loop
+    // Mouse/Touch Interaction for POI
+    const updateMouse = (x, y) => {
+        if (poiManager) {
+            poiManager.mouse.x = (x / window.innerWidth) * 2 - 1;
+            poiManager.mouse.y = -(y / window.innerHeight) * 2 + 1;
+        }
+    };
+    window.addEventListener('mousemove', (e) => updateMouse(e.clientX, e.clientY));
+    window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) updateMouse(e.touches[0].clientX, e.touches[0].clientY);
+    });
+
     renderer.setAnimationLoop(animate);
 }
 
@@ -90,15 +109,25 @@ function animate(time) {
     const delta = Math.min(time - lastTime, 100);
     lastTime = time;
 
-    // Update orbit controls only if not in VR
     if (!renderer.xr.isPresenting) {
+        // Sync OrbitControls to camera instead of cameraGroup during 2D
         controls.update();
+        
+        // Synchronize cameraTransform state WITH OrbitControls
+        const pos = camera.position;
+        const r = pos.length();
+        if (r > 0) {
+            cameraTransform.cameraDistance = r;
+            cameraTransform.cameraPhi = Math.asin(pos.y / r);
+            cameraTransform.cameraTheta = Math.atan2(pos.x, pos.z);
+        }
+    } else {
+        // In VR, apply transformation to cameraGroup
+        cameraTransform.update(cameraGroup);
     }
 
-    // Standard Gamepad (Desktop/Bluetooth)
     updateGamepad(earthHUD, moonHUD);
 
-    // Main Simulation Frame
     animateFrame(
         delta, scene, camera, renderer, 
         [earthHUD, moonHUD], poiManager, 
@@ -106,7 +135,6 @@ function animate(time) {
         () => updateVRControllers(renderer, scene, camera)
     );
 
-    // VR Help panel logic
     if (vrHelp) vrHelp.update();
 
     renderer.render(scene, camera);

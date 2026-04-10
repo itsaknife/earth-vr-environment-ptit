@@ -89,68 +89,63 @@ export function updateVRControllers(renderer, scene, camera) {
     const gamepad = source.gamepad;
     if (!gamepad) return;
 
-    // Button 5 (B/Y or Secondary Trigger depending on platform)
-    // In WebXR, typically: 0: trigger, 1: grip, 4: A/X, 5: B/Y
+    // --- Global Actions (Outside Menu) ---
+    
+    // Toggle Menu (Button 5: B/Y)
     if (gamepad.buttons[5] && gamepad.buttons[5].pressed) {
       if (now - menuState.lastButtonPress > debounceTime) {
         menuState.isMenuVisible = !menuState.isMenuVisible;
         vrMenuGroup.visible = menuState.isMenuVisible;
-        
         if (menuState.isMenuVisible) {
-            // Reposition menu in front of camera
             const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
             const pos = camera.position.clone().add(direction.multiplyScalar(15));
             vrMenuGroup.position.copy(pos);
             vrMenuGroup.lookAt(camera.position);
         }
-        
         menuState.lastButtonPress = now;
       }
     }
 
-    if (menuState.isMenuVisible) {
-      // Reset (Button 4: A/X)
-      if (gamepad.buttons[4] && gamepad.buttons[4].pressed) {
+    // Reset (Button 4: A/X)
+    if (gamepad.buttons[4] && gamepad.buttons[4].pressed) {
         if (now - menuState.lastButtonPress > debounceTime) {
-          resetEarth();
-          updateVRMenuCanvas();
-          menuState.lastButtonPress = now;
+            resetEarth();
+            updateVRMenuCanvas();
+            menuState.lastButtonPress = now;
         }
-      }
+    }
 
-      // Doomsday (Button 3: Stick Click)
-      if (gamepad.buttons[3] && gamepad.buttons[3].pressed) {
+    // Doomsday (Button 3: Stick Click)
+    if (gamepad.buttons[3] && gamepad.buttons[3].pressed) {
         if (now - menuState.lastButtonPress > 1000) {
-          toggleDoomsday(scene);
-          updateVRMenuCanvas();
-          menuState.lastButtonPress = now;
+            toggleDoomsday(scene);
+            updateVRMenuCanvas();
+            menuState.lastButtonPress = now;
         }
-      }
+    }
 
-      // Time Scaling (Stick X: axis 2)
-      const xAxe = gamepad.axes[2];
-      if (Math.abs(xAxe) > 0.5) {
+    // Meteor (Button 1: Grip)
+    if (gamepad.buttons[1] && gamepad.buttons[1].pressed) {
+        if (now - menuState.lastButtonPress > 800) {
+            launchMeteor(scene);
+            menuState.lastButtonPress = now;
+        }
+    }
+
+    // Time Scaling (Stick X: axis 2) - Always active for convenience
+    const xAxe = gamepad.axes[2];
+    if (Math.abs(xAxe) > 0.5) {
         if (now - menuState.lastButtonPress > 100) {
-          let newScale = timeScale + (xAxe > 0 ? 500 : -500);
-          newScale = Math.max(0, Math.min(20000, newScale));
-          setTimeScale(newScale);
-          
-          if (document.getElementById("hudTimeSlider")) {
-            document.getElementById("hudTimeSlider").value = newScale;
-            document.getElementById("hud-time-val").innerText = newScale + "x";
-          }
-          updateVRMenuCanvas();
-          menuState.lastButtonPress = now;
+            let newScale = timeScale + (xAxe > 0 ? 500 : -500);
+            newScale = Math.max(0, Math.min(20000, newScale));
+            setTimeScale(newScale);
+            if (document.getElementById("hudTimeSlider")) {
+                document.getElementById("hudTimeSlider").value = newScale;
+                document.getElementById("hud-time-val").innerText = newScale + "x";
+            }
+            updateVRMenuCanvas();
+            menuState.lastButtonPress = now;
         }
-      }
-
-      // Meteor (Button 1: Grip)
-      if (gamepad.buttons[1] && gamepad.buttons[1].pressed) {
-        if (now - menuState.lastButtonPress > 1000) {
-          launchMeteor(scene);
-          menuState.lastButtonPress = now;
-        }
-      }
     }
   });
 }

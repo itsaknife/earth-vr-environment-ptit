@@ -164,20 +164,25 @@ export var POIManager = function(scene, earthObject, camera, renderer) {
         } else {
             // WebXR controller/gaze picking
             const controller = this.renderer.xr.getController(0);
-            if (controller) {
+            if (controller && controller.visible) {
                 const tempMatrix = new THREE.Matrix4().extractRotation(controller.matrixWorld);
                 this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
                 this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
             } else {
-                var direction = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-                this.raycaster.set(camera.position, direction);
+                // Gaze picking (center of view)
+                const camWorldPos = new THREE.Vector3();
+                const camWorldDir = new THREE.Vector3();
+                camera.getWorldPosition(camWorldPos);
+                camera.getWorldDirection(camWorldDir);
+                this.raycaster.set(camWorldPos, camWorldDir);
             }
         }
 
         var intersects = this.raycaster.intersectObjects([this.earthMesh].concat(this.markers));
         if (intersects.length > 0) {
             var firstHit = intersects[0].object;
-            if (firstHit !== this.earthMesh) {
+            // Check if we hit a marker (markers are spheres, Earth is a Mesh)
+            if (this.markers.includes(firstHit)) {
                 var poi = firstHit.userData;
                 if (this.hoveredPOI !== poi) {
                     this.hoveredPOI = poi;
@@ -185,7 +190,7 @@ export var POIManager = function(scene, earthObject, camera, renderer) {
                     this.infoPanel.targetOpacity = 0.9;
                     firstHit.material.color.set(0xffff00);
                 }
-            } else {
+            } else if (firstHit === this.earthMesh) {
                 this.resetHover();
             }
         } else {
@@ -215,13 +220,16 @@ export var POIManager = function(scene, earthObject, camera, renderer) {
         }
 
         if (this.infoPanel.mesh.visible) {
-            this.infoPanel.mesh.lookAt(camera.position);
+            const camWorldPos = new THREE.Vector3();
+            camera.getWorldPosition(camWorldPos);
+            this.infoPanel.mesh.lookAt(camWorldPos);
+
             if (this.hoveredPOI) {
                 for (var i = 0; i < this.markers.length; i++) {
                     if (this.markers[i].userData === this.hoveredPOI) {
                         var worldPos = new THREE.Vector3();
                         this.markers[i].getWorldPosition(worldPos);
-                        var toCamera = new THREE.Vector3().subVectors(camera.position, worldPos).normalize();
+                        var toCamera = new THREE.Vector3().subVectors(camWorldPos, worldPos).normalize();
                         this.infoPanel.mesh.position.copy(worldPos).add(toCamera.multiplyScalar(2.5));
                         break;
                     }

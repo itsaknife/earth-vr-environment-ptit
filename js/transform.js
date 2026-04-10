@@ -69,9 +69,11 @@ export const cameraTransform = new (function () {
     if (this.cameraTheta < 0) this.cameraTheta += 2 * Math.PI;
   };
 
-  this.update = function () {
-    if (!this.camera) return;
-    this.camera.position.set(
+  this.update = function (target) {
+    var obj = target || this.camera;
+    if (!obj) return;
+    
+    obj.position.set(
       this.cameraDistance *
         Math.sin(this.cameraTheta) *
         Math.cos(this.cameraPhi),
@@ -80,7 +82,7 @@ export const cameraTransform = new (function () {
         Math.cos(this.cameraTheta) *
         Math.cos(this.cameraPhi),
     );
-    this.camera.lookAt(this.zeroVector);
+    obj.lookAt(this.zeroVector);
   };
 })();
 

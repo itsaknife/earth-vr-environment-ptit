@@ -40,7 +40,9 @@ export var EarthHUD = function (camera) {
     this.context.fillText(formatVietnamTime(), 0, 80);
 
     this.texture.needsUpdate = true;
-    var angle = Math.atan2(this._camera.position.x, this._camera.position.z);
+    const worldPos = new THREE.Vector3();
+    this._camera.getWorldPosition(worldPos);
+    var angle = Math.atan2(worldPos.x, worldPos.z);
     this.plane.quaternion.set(0, 0, 0, 1);
     this.plane.rotateY(angle);
   };
