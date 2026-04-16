@@ -94,7 +94,7 @@ export function updateVRControllers(renderer, scene, camera) {
     // --- Global Actions (Outside Menu) ---
     
     // Toggle Menu (Button 5: B/Y)
-    if (gamepad.buttons[5] && gamepad.buttons[5].pressed) {
+    if (gamepad.buttons[5]?.pressed) {
       if (now - menuState.lastButtonPress > debounceTime) {
         menuState.isMenuVisible = !menuState.isMenuVisible;
         vrMenuGroup.visible = menuState.isMenuVisible;
@@ -112,7 +112,7 @@ export function updateVRControllers(renderer, scene, camera) {
     }
 
     // Reset (Button 4: A/X)
-    if (gamepad.buttons[4] && gamepad.buttons[4].pressed) {
+    if (gamepad.buttons[4]?.pressed) {
         if (now - menuState.lastButtonPress > debounceTime) {
             resetEarth();
             updateVRMenuCanvas();
@@ -121,7 +121,7 @@ export function updateVRControllers(renderer, scene, camera) {
     }
 
     // Doomsday (Button 3: Stick Click)
-    if (gamepad.buttons[3] && gamepad.buttons[3].pressed) {
+    if (gamepad.buttons[3]?.pressed) {
         if (now - menuState.lastButtonPress > 1000) {
             toggleDoomsday(scene);
             updateVRMenuCanvas();
@@ -130,7 +130,7 @@ export function updateVRControllers(renderer, scene, camera) {
     }
 
     // Meteor (Button 1: Grip)
-    if (gamepad.buttons[1] && gamepad.buttons[1].pressed) {
+    if (gamepad.buttons[1]?.pressed) {
         if (now - menuState.lastButtonPress > 800) {
             launchMeteor(scene);
             menuState.lastButtonPress = now;
@@ -141,16 +141,16 @@ export function updateVRControllers(renderer, scene, camera) {
     
     // Left Controller (Index 0 typically) - Rotation
     if (source.handedness === 'left') {
-        const stickX = gamepad.axes[2];
-        const stickY = gamepad.axes[3];
+        const stickX = gamepad.axes.length >= 3 ? gamepad.axes[2] : (gamepad.axes[0] || 0);
+        const stickY = gamepad.axes.length >= 4 ? gamepad.axes[3] : (gamepad.axes[1] || 0);
         if (Math.abs(stickX) > 0.1) cameraTransform.moveTheta(stickX * 0.03);
         if (Math.abs(stickY) > 0.1) cameraTransform.movePhi(-stickY * 0.03);
     }
 
     // Right Controller (Index 1 typically) - Zoom & Time
     if (source.handedness === 'right') {
-        const stickX = gamepad.axes[2];
-        const stickY = gamepad.axes[3];
+        const stickX = gamepad.axes.length >= 3 ? gamepad.axes[2] : (gamepad.axes[0] || 0);
+        const stickY = gamepad.axes.length >= 4 ? gamepad.axes[3] : (gamepad.axes[1] || 0);
         
         // Horizontal: Time Scaling
         if (Math.abs(stickX) > 0.5) {

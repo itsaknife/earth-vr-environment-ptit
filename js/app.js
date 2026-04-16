@@ -72,8 +72,8 @@ async function init() {
     controller2 = renderer.xr.getController(1);
     controller1.add(createControllerRay());
     controller2.add(createControllerRay());
-    scene.add(controller1);
-    scene.add(controller2);
+    cameraGroup.add(controller1);
+    cameraGroup.add(controller2);
 
     // ── Initializations ──
     initSkybox(scene);
