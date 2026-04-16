@@ -19,6 +19,19 @@ import { TrafficManager } from './traffic.js';
 // ── Application State ────────────────────────────────────────────────────────
 let renderer, scene, camera, cameraGroup, controls;
 let earthHUD, moonHUD, poiManager, trafficManager, vrHelp;
+let controller1, controller2;
+
+function createControllerRay() {
+    const points = [
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, 0, -1),
+    ];
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({ color: 0x00ffff });
+    const line = new THREE.Line(geometry, material);
+    line.scale.z = 12;
+    return line;
+}
 
 async function init() {
     // ── Renderer Setup ──
@@ -53,6 +66,14 @@ async function init() {
 
     // ── VR Button ──
     document.getElementById('vr-button').appendChild(VRButton.createButton(renderer));
+
+    // ── XR Controller Rays ──
+    controller1 = renderer.xr.getController(0);
+    controller2 = renderer.xr.getController(1);
+    controller1.add(createControllerRay());
+    controller2.add(createControllerRay());
+    scene.add(controller1);
+    scene.add(controller2);
 
     // ── Initializations ──
     initSkybox(scene);
